@@ -20,7 +20,7 @@ const errorsHandler = (err, req, res, next) => {
         case constants.SERVER_ERROR:
             res.json({ title: "Server Error", message: err.message })
         default:
-            console.log("No registered error detected in handler. Passing...")
+            console.log(statusCode + " No registered error detected in handler. Passing...")
     }
 
 
