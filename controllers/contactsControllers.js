@@ -2,7 +2,6 @@ const Contacts = require('../models/contactsModel')
 
 
 const getAllContacts = (req, res) => {
-    console.log(`Incoming <${req.method}> request on <${req.originalUrl}> from <${req.ip}>`)
 
     // Querying 
     Contacts.find()
@@ -16,7 +15,7 @@ const getAllContacts = (req, res) => {
 }
 
 const createContact = (req, res) => {
-    console.log(`Incoming <${req.method}> request on <${req.originalUrl}> from <${req.ip}>`)
+
     const { name, phone, group, email } = req.body
 
     // Basic check
@@ -32,6 +31,7 @@ const createContact = (req, res) => {
         .catch((err) => {
             // console.error(err)
             res.status(400)
+            // Duplicate key error
             if (err.code == 11000) {
                 res.json({ message: "Error: Phone number already exist.", error: err })
             }
@@ -41,7 +41,7 @@ const createContact = (req, res) => {
 }
 
 const getOneContact = (req, res) => {
-    console.log(`Incoming <${req.method}> request on <${req.originalUrl}> from <${req.ip}>`)
+
     const { id } = req.params
 
     // basic check
@@ -52,6 +52,9 @@ const getOneContact = (req, res) => {
 
     Contacts.findById(id)
         .then(contact => {
+            if (!id) {
+                res.status(404).json({ error: "Contact not found!" })
+            }
             res.status(200).json(contact)
         })
         .catch(err => {
@@ -60,7 +63,7 @@ const getOneContact = (req, res) => {
 }
 
 const updateContact = (req, res) => {
-    console.log(`Incoming <${req.method}> request on <${req.originalUrl}> from <${req.ip}>`)
+
     const { id } = req.params
     // basic check
     if (!id) {
@@ -79,7 +82,7 @@ const updateContact = (req, res) => {
 }
 
 const deleteContact = (req, res) => {
-    console.log(`Incoming <${req.method}> request on <${req.originalUrl}> from <${req.ip}>`)
+
     const { id } = req.params
 
     // basic check
