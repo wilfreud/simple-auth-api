@@ -12,7 +12,7 @@ const validateToken = (req, res, next) => {
             if (err) {
                 res.status(401).json({ "error": "User is not authorized" })
             }
-
+            // console.log(decoded)
             req.user = decoded.user
             next()
         })

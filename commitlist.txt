@@ -1,0 +1,1 @@
+only logged user contacts can be CRUDed.controlled update/delete of contacts 

@@ -4,7 +4,7 @@ const Contacts = require('../models/contactsModel')
 const getAllContacts = (req, res) => {
 
     // Querying 
-    Contacts.find().populate({
+    Contacts.find({ owner: req.user.id }).populate({
         "path": "owner",
         "select": "username -_id"
     })
@@ -22,11 +22,12 @@ const createContact = (req, res) => {
     const { name, phone, owner } = req.body
 
     // Basic check
-    if (!name || !phone || !owner) {
+    if (!name || !phone) {
         res.status(400)
-        throw new Error('Fields [name, phone, owner] are required !')
+        throw new Error('Fields [name, phone] are required !')
     }
 
+    req.body.owner = req.user.id
     Contacts.create(req.body)
         .then((contact) => {
             res.status(201).json({ message: "Successfully added contact", data: contact })
@@ -76,8 +77,16 @@ const updateContact = (req, res) => {
         res.status(400)
         throw new Error('id is required !')
     }
-
-    Contacts.findByIdAndUpdate(id, req.body, { new: true })
+    // console.log(id, req.user.id)
+    Contacts.findOneAndUpdate({
+        $and: [
+            { "_id": id },
+            { "owner": req.user.id }
+        ]
+    },
+        req.body,
+        { new: true }
+    )
         .then((newContact) => {
             newContact.populate({
                 "path": "owner",
@@ -87,7 +96,8 @@ const updateContact = (req, res) => {
             res.status(200).json({ message: "Contact udpated!", data: newContact })
         })
         .catch(err => {
-            res.status(404).json({ message: "Error updating contact", error: err })
+            // console.error(err)
+            res.status(403).json({ message: "Unauthorized update!", error: err })
         })
 }
 
@@ -101,16 +111,21 @@ const deleteContact = (req, res) => {
         throw new Error('id is required !')
     }
 
-    Contacts.findByIdAndDelete(id)
+    Contacts.findOneAndDelete({
+        $and: [
+            { "_id": id },
+            { "owner": req.user.id }
+        ]
+    })
         .then((obj) => {
             // Null check
             if (!obj) {
                 throw new Error('Contact not found')
             }
-            res.status(204)//.json({ message: "Contact successfully deleted", data: obj })
+            res.status(204).json({ message: "Contact successfully deleted", data: obj })
         })
         .catch((err) => {
-            console.error(err)
+            // console.error(err)
             res.status(404).json({ message: "Error deleting contact.", error: err })
         })
 }
