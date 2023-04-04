@@ -4,7 +4,7 @@ const Contacts = require('../models/contactsModel')
 const getAllContacts = (req, res) => {
 
     // Querying 
-    Contacts.find()
+    Contacts.find().populate("owner")
         .then((contact) => {
             // console.log(contact)
             res.status(200).json(contact)
@@ -50,7 +50,7 @@ const getOneContact = (req, res) => {
         throw new Error('id is required !')
     }
 
-    Contacts.findById(id)
+    Contacts.findById(id).populate("owner")
         .then(contact => {
             if (!id) {
                 res.status(404).json({ error: "Contact not found!" })
@@ -71,9 +71,10 @@ const updateContact = (req, res) => {
         throw new Error('id is required !')
     }
 
-    Contacts.findOneAndUpdate(id, req.body, { new: true })
+    Contacts.findById(id, req.body, { new: true })
         .then((newContact) => {
-            // console.log(newContact)
+            newContact.populate("owner")
+
             res.status(200).json({ message: "Contact udpated!", data: newContact })
         })
         .catch(err => {

@@ -1,5 +1,6 @@
 const User = require('../models/usersModel')
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
 
 const SALT_ROUNDS = 10
 
@@ -40,7 +41,45 @@ const getAllUsers = (req, res) => {
 
 
 const loginUser = (req, res) => {
+    const { email, password } = req.body
 
+    if (!email || !password) {
+        res.status(400)
+        res.json({ error: 'Email and password are requierd' })
+        return
+    }
+
+    User.findOne({ email: email })
+        .then((UInstance) => {
+            // If user is not found
+            if (!UInstance) {
+                throw new Error('')
+            }
+
+            // Compare passwords
+            const passwordIsCorrect = bcrypt.compareSync(password, UInstance.password)
+
+            if (!passwordIsCorrect) {
+                res.status(401).json({ error: "Email and password don't match" })
+                return
+            }
+
+            const accessToken = jwt.sign({
+                user: {
+                    username: UInstance.username,
+                    email: UInstance.email,
+                    id: UInstance.id
+                }
+            },
+                process.env.ACCESS_TOKEN_SECRET,
+                { expiresIn: "7d" }
+            )
+
+            res.status(200).json(accessToken)
+        })
+        .catch((err) => {
+            res.status(404).json({ error: "User not found!" })
+        })
 }
 
 const registerUser = (req, res) => {
@@ -153,8 +192,7 @@ const updateUser = (req, res) => {
 
 const currentUser = (req, res) => {
 
-
-
+    res.status(200).json(req.user)
 }
 
 module.exports = { getAllUsers, getUser, loginUser, registerUser, currentUser, deleteUser, updateUser }

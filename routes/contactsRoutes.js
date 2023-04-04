@@ -7,6 +7,10 @@ const {
     deleteContact,
     updateContact
 } = require('../controllers/contactsControllers')
+const validateToken = require('../middlewares/tokenValidation')
+
+// Use token validator for all routes
+router.use(validateToken)
 
 // Creating new route for contacts (global)
 router.route('/')

@@ -9,6 +9,7 @@ const {
     deleteUser,
     updateUser
 } = require('../controllers/usersController')
+const validateToken = require('../middlewares/tokenValidation')
 
 router.get('/', getAllUsers)
 router.route('/:id')
@@ -18,6 +19,6 @@ router.route('/:id')
 
 router.post('/login', loginUser)
 router.post('/register', registerUser)
-router.post('/current', currentUser)
+router.post('/current', validateToken, currentUser)
 
 module.exports = router  
