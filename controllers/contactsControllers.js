@@ -4,7 +4,10 @@ const Contacts = require('../models/contactsModel')
 const getAllContacts = (req, res) => {
 
     // Querying 
-    Contacts.find().populate("owner")
+    Contacts.find().populate({
+        "path": "owner",
+        "select": "username -_id"
+    })
         .then((contact) => {
             // console.log(contact)
             res.status(200).json(contact)
@@ -16,12 +19,12 @@ const getAllContacts = (req, res) => {
 
 const createContact = (req, res) => {
 
-    const { name, phone, group, email } = req.body
+    const { name, phone, owner } = req.body
 
     // Basic check
-    if (!name || !phone) {
+    if (!name || !phone || !owner) {
         res.status(400)
-        throw new Error('Both fields name and phone required !')
+        throw new Error('Fields [name, phone, owner] are required !')
     }
 
     Contacts.create(req.body)
@@ -50,7 +53,10 @@ const getOneContact = (req, res) => {
         throw new Error('id is required !')
     }
 
-    Contacts.findById(id).populate("owner")
+    Contacts.findById(id).populate({
+        "path": "owner",
+        "select": "username -_id"
+    })
         .then(contact => {
             if (!id) {
                 res.status(404).json({ error: "Contact not found!" })
@@ -71,9 +77,12 @@ const updateContact = (req, res) => {
         throw new Error('id is required !')
     }
 
-    Contacts.findById(id, req.body, { new: true })
+    Contacts.findByIdAndUpdate(id, req.body, { new: true })
         .then((newContact) => {
-            newContact.populate("owner")
+            newContact.populate({
+                "path": "owner",
+                "select": "username -_id"
+            })
 
             res.status(200).json({ message: "Contact udpated!", data: newContact })
         })
